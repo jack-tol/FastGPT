@@ -1,13 +1,3 @@
----
-title: FastGPT
-emoji: 💬
-colorFrom: yellow
-colorTo: purple
-sdk: docker
-app_file: main.py
-pinned: false
----
-
 # FastGPT: A Lightweight ChatGPT Implementation Using FastHTML
 
 **FastGPT** is a minimalistic ChatGPT implementation built using FastHTML, designed to be fast and lightweight, while providing a seamless experience for users. It connects to the GPT-4o model and supports session-based memory to allow for back-and-forth interactions.
@@ -23,6 +13,10 @@ We aim to progressively and iteratively add features to better align with the cu
 Watch the demo of FastGPT on YouTube:
 
 [![FastGPT Demo](https://img.youtube.com/vi/24aGmm_0mTw/0.jpg)](https://www.youtube.com/watch?v=24aGmm_0mTw)
+
+## FastGPT on HuggingFace
+
+Try out the demo directly on Hugging Face: [FastGPT on Hugging Face](https://huggingface.co/spaces/jacktol/FastGPT)
 
 ## Features
 
