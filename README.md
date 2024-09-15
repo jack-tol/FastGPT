@@ -11,8 +11,8 @@ We aim to progressively and iteratively add features to better align with the cu
 ## Video Demo
 
 Watch the demo of FastGPT on YouTube:
+[fastgpt_demo](https://github.com/user-attachments/assets/eeaccac7-778e-49ee-8de4-52e79683225a)
 
-https://github.com/user-attachments/assets/36803dc3-524b-4946-8963-7b3d46134b2c
 
 ## Features
 
