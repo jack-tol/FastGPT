@@ -1,8 +1,8 @@
 ---
 title: FastGPT
-emoji: 🤖
-colorFrom: blue
-colorTo: green
+emoji: 💬
+colorFrom: yellow
+colorTo: purple
 sdk: docker
 app_file: main.py
 pinned: false
