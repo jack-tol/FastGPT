@@ -1,14 +1,19 @@
+import os
 from fastapi import FastAPI, HTTPException, Request
 from sse_starlette.sse import EventSourceResponse
+from fastapi.staticfiles import StaticFiles
 from openai import AsyncOpenAI
-from fasthtml.common import FastHTML, Html, Head, Title, Body, Div, Button, Textarea, Script, Style, P
+from fasthtml.common import FastHTML, Html, Head, Title, Body, Div, Button, Textarea, Script, Style, P, Favicon
 from fasthtml.common import ft_hx
 import bleach
 
 from styles import styles
 from script import script
 
+# Initialize FastHTML and FastAPI
 app = FastHTML()
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 client = AsyncOpenAI()
 
 # Dictionary to store user conversations by session ID
@@ -19,6 +24,11 @@ ALLOWED_TAGS = list(bleach.sanitizer.ALLOWED_TAGS) + [
     "h1", "h2", "h3", "p", "strong", "em", "ul", "ol", "li", "code", "pre", "blockquote"
 ]
 ALLOWED_ATTRIBUTES = bleach.sanitizer.ALLOWED_ATTRIBUTES
+
+# Resolve paths to favicon images
+static_dir = os.path.join(os.path.dirname(__file__), "static")
+light_icon = os.path.join(static_dir, "favicon-light.ico")
+dark_icon = os.path.join(static_dir, "favicon-dark.ico")
 
 # Custom SVG component
 def Svg(*c, viewBox=None, **kwargs):
@@ -39,6 +49,7 @@ def home():
     page = Html(
         Head(
             Title('FastGPT'),
+            Favicon(light_icon="/static/favicon-light.ico", dark_icon="/static/favicon-dark.ico"),  # Serve static favicon files
             Style(styles),
             Script(src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"),
             Script(src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/2.2.9/purify.min.js")
