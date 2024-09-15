@@ -109,7 +109,7 @@ textarea {
     background-color: transparent;
     color: #ececec;
     border: none;
-    padding: 4px 20px 5px 20px;
+    padding: 4px 20px 2px 20px;
     font-family: 'Inter', sans-serif;
     font-size: 18px;
     line-height: 1.5;

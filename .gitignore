@@ -1,2 +1,3 @@
 .sesskey
 __pycache__/
+venv/
