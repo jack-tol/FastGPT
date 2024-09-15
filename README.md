@@ -8,6 +8,12 @@ We aim to progressively and iteratively add features to better align with the cu
 [https://jacktol.net](https://jacktol.net)  
 [https://conversationai.io](https://conversationai.io)
 
+## Video Demo
+
+Watch the demo of FastGPT on YouTube:
+
+[![FastGPT Demo](https://img.youtube.com/vi/24aGmm_0mTw/0.jpg)](https://www.youtube.com/watch?v=24aGmm_0mTw)
+
 ## Features
 
 - **GPT-4o Model Integration**: Connects to the latest version of OpenAI's GPT-4o model for advanced text-based interactions.
