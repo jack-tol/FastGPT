@@ -3,29 +3,36 @@ from fastapi import FastAPI, HTTPException, Request
 from sse_starlette.sse import EventSourceResponse
 from fastapi.staticfiles import StaticFiles
 from openai import AsyncOpenAI
-from fasthtml.common import FastHTML, Html, Head, Title, Body, Div, Button, Textarea, Script, Style, P, Favicon
-from fasthtml.common import ft_hx
+from fasthtml.common import FastHTML, Html, Head, Title, Body, Div, Button, Textarea, Script, Style, P, Favicon, ft_hx
 import bleach
 
 from styles import styles
 from script import script
+from fasthtml_hf import setup_hf_backup
 
-# Initialize FastHTML and FastAPI
-app = FastHTML()
+# Set the secret key from the environment or use default
+secret_key = os.getenv('SECRET_KEY')
+
+# Initialize FastHTML with the secret key
+app = FastHTML(secret_key=secret_key)
+
+# Mount static files for favicon and other static assets
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+# Setup Hugging Face backup with writable directory
+setup_hf_backup(app)
+
+# OpenAI client instance
 client = AsyncOpenAI()
 
-# Dictionary to store user conversations by session ID
+# Store user conversations by session ID
 conversations = {}
 
-# Allow additional HTML tags and attributes for sanitization
-ALLOWED_TAGS = list(bleach.sanitizer.ALLOWED_TAGS) + [
-    "h1", "h2", "h3", "p", "strong", "em", "ul", "ol", "li", "code", "pre", "blockquote"
-]
+# Bleach allowed tags and attributes for sanitization
+ALLOWED_TAGS = list(bleach.sanitizer.ALLOWED_TAGS) + ["h1", "h2", "h3", "p", "strong", "em", "ul", "ol", "li", "code", "pre", "blockquote"]
 ALLOWED_ATTRIBUTES = bleach.sanitizer.ALLOWED_ATTRIBUTES
 
-# Resolve paths to favicon images
+# Static file paths
 static_dir = os.path.join(os.path.dirname(__file__), "static")
 light_icon = os.path.join(static_dir, "favicon-light.ico")
 dark_icon = os.path.join(static_dir, "favicon-dark.ico")
@@ -34,7 +41,7 @@ dark_icon = os.path.join(static_dir, "favicon-dark.ico")
 def Svg(*c, viewBox=None, **kwargs):
     return ft_hx('svg', *c, viewBox=viewBox, **kwargs)
 
-# Custom Path component for SVG with color
+# Custom Path component for SVG
 def Path(*c, d=None, fill=None, **kwargs):
     return ft_hx('path', *c, d=d, fill=fill, **kwargs)
 
@@ -49,7 +56,7 @@ def home():
     page = Html(
         Head(
             Title('FastGPT'),
-            Favicon(light_icon="/static/favicon-light.ico", dark_icon="/static/favicon-dark.ico"),  # Serve static favicon files
+            Favicon(light_icon="/static/favicon-light.ico", dark_icon="/static/favicon-dark.ico"),  # Serve favicon files
             Style(styles),
             Script(src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"),
             Script(src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/2.2.9/purify.min.js")
@@ -129,7 +136,7 @@ async def stream_response(request: Request, message: str, session_id: str = None
 
     async def event_generator():
         try:
-            # Call OpenAI API to stream response
+            # Stream response from OpenAI
             response = await client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=conversations[session_id],
@@ -138,7 +145,7 @@ async def stream_response(request: Request, message: str, session_id: str = None
 
             assistant_response = ""
 
-            # Stream response chunks to the client
+            # Stream each chunk of the response
             async for chunk in response:
                 if await request.is_disconnected():
                     print(f"Client for session {session_id} disconnected")
@@ -149,7 +156,7 @@ async def stream_response(request: Request, message: str, session_id: str = None
                     assistant_response += content
                     yield {"data": content}
 
-            # Save assistant's response to the conversation
+            # Store assistant's full response
             conversations[session_id].append({"role": "assistant", "content": assistant_response})
 
         except Exception as e:
@@ -160,7 +167,7 @@ async def stream_response(request: Request, message: str, session_id: str = None
 
     return EventSourceResponse(event_generator())
 
-# Route to reset conversation for a given session ID
+# Route to reset the conversation for a given session ID
 @app.get("/reset")
 def reset_conversation(session_id: str):
     """Reset the conversation for the specified session ID."""

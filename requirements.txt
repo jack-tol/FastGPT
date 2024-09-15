@@ -3,3 +3,4 @@ fastapi
 openai
 python-fasthtml
 sse-starlette
+fasthtml-hf
