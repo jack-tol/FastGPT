@@ -211,11 +211,13 @@ textarea::placeholder {
     display: inline-block;
     padding: 10px 20px;
     border-radius: 20px;
-    max-width: 100%;
+    max-width: 500px;
     margin: 10px 0;
     align-self: flex-end;
     word-wrap: break-word;
+    word-break: break-word;
 }
+
 
 .message.ai {
     background-color: transparent;
