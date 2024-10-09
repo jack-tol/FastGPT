@@ -10,42 +10,31 @@ from styles import styles
 from script import script
 from fasthtml_hf import setup_hf_backup
 
-# Set the secret key from the environment or use default
 secret_key = os.getenv('SECRET_KEY')
 
-# Initialize FastHTML with the secret key
 app = FastHTML(secret_key=secret_key)
 
-# Mount static files for favicon and other static assets
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Setup Hugging Face backup with writable directory
 setup_hf_backup(app)
 
-# OpenAI client instance
 client = AsyncOpenAI()
 
-# Store user conversations by session ID
 conversations = {}
 
-# Bleach allowed tags and attributes for sanitization
 ALLOWED_TAGS = list(bleach.sanitizer.ALLOWED_TAGS) + ["h1", "h2", "h3", "p", "strong", "em", "ul", "ol", "li", "code", "pre", "blockquote"]
 ALLOWED_ATTRIBUTES = bleach.sanitizer.ALLOWED_ATTRIBUTES
 
-# Static file paths
 static_dir = os.path.join(os.path.dirname(__file__), "static")
 light_icon = os.path.join(static_dir, "favicon-light.ico")
 dark_icon = os.path.join(static_dir, "favicon-dark.ico")
 
-# Custom SVG component
 def Svg(*c, viewBox=None, **kwargs):
     return ft_hx('svg', *c, viewBox=viewBox, **kwargs)
 
-# Custom Path component for SVG
 def Path(*c, d=None, fill=None, **kwargs):
     return ft_hx('path', *c, d=d, fill=fill, **kwargs)
 
-# Homepage route
 @app.get("/")
 def home():
     """Render homepage with FastGPT UI."""
@@ -56,7 +45,7 @@ def home():
     page = Html(
         Head(
             Title('FastGPT'),
-            Favicon(light_icon="/static/favicon-light.ico", dark_icon="/static/favicon-dark.ico"),  # Serve favicon files
+            Favicon(light_icon="/static/favicon-light.ico", dark_icon="/static/favicon-dark.ico"),
             Style(styles),
             Script(src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"),
             Script(src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/2.2.9/purify.min.js")
@@ -116,7 +105,6 @@ def home():
     )
     return page
 
-# Route to stream responses based on user input
 @app.get("/stream")
 async def stream_response(request: Request, message: str, session_id: str = None):
     """Stream responses for the given user input."""
@@ -125,18 +113,15 @@ async def stream_response(request: Request, message: str, session_id: str = None
     if not session_id:
         raise HTTPException(status_code=400, detail="Session ID is required")
 
-    # Initialize conversation if the session ID is new
     if session_id not in conversations:
         conversations[session_id] = [
             {"role": "system", "content": "You are a helpful assistant. Use Markdown for formatting."}
         ]
 
-    # Add user's message to the conversation
     conversations[session_id].append({"role": "user", "content": message})
 
     async def event_generator():
         try:
-            # Stream response from OpenAI
             response = await client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=conversations[session_id],
@@ -145,7 +130,6 @@ async def stream_response(request: Request, message: str, session_id: str = None
 
             assistant_response = ""
 
-            # Stream each chunk of the response
             async for chunk in response:
                 if await request.is_disconnected():
                     print(f"Client for session {session_id} disconnected")
@@ -156,7 +140,6 @@ async def stream_response(request: Request, message: str, session_id: str = None
                     assistant_response += content
                     yield {"data": content}
 
-            # Store assistant's full response
             conversations[session_id].append({"role": "assistant", "content": assistant_response})
 
         except Exception as e:
@@ -167,7 +150,6 @@ async def stream_response(request: Request, message: str, session_id: str = None
 
     return EventSourceResponse(event_generator())
 
-# Route to reset the conversation for a given session ID
 @app.get("/reset")
 def reset_conversation(session_id: str):
     """Reset the conversation for the specified session ID."""
